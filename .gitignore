@@ -1,3 +1,11 @@
 # Ignore image files
 **.png
 **.jpg
+
+!**sinusoid_predictions.png
+
+**.npz
+
+**.pyc
+
+temp.py
