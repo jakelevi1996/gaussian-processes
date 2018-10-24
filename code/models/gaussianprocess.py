@@ -69,10 +69,10 @@ class GaussianProcess():
         if type(x_test) is not np.ndarray: x_test = np.array(x_test)
         if not len(x_test.shape) == 2: x_test = x_test.reshape(-1, 1)
         # Invert the covariance matrix, if it has not been done so already:
-        if not self.cov_train_inv:
+        if self.cov_train_inv is None:
             self.cov_train_inv = np.linalg.inv(self.cov_train)
         # Find the predictive weights, if they have not been found already:
-        if not self.predictive_weights:
+        if self.predictive_weights is None:
             self.predictive_weights = self.cov_train_inv.dot(self.targets)
         # Find the covariance between train and test inputs:
         k_predict = self.kernel(x_test, self.x_train)
@@ -97,15 +97,31 @@ class GaussianProcess():
         # Find the covariance between train and test inputs:
         k_predict = self.kernel(x_test, self.x_train)
         # Fastest to use predictive weights, if they've been found:
-        if self.predictive_weights:
+        if self.predictive_weights is not None:
             return k_predict.dot(self.predictive_weights)
         # Otherwise, if the training covariance has been inverted, use that:
-        if self.cov_train_inv:
+        if self.cov_train_inv is not None:
             return k_predict.dot(self.cov_train_inv).dot(self.targets)
         # Otherwise, find the predictive weights and predict the mean:
         self.predictive_weights = np.linalg.solve(self.cov_train, self.targets)
 
         return k_predict.dot(self.predictive_weights)
+    
+    def log_evidence(self):
+        """See equation 6.69 of Bishop, 2006"""
+        # Find the log-determinant of the covariance matrix:
+        sign, logdet = np.linalg.slogdet(2 * np.pi * self.cov_train)
+        # Check the determinant is positive:
+        if sign <= 0: raise ValueError(
+            "The covariance matrix has non-positive determinant"
+        )
+        # Invert the covariance matrix, if it has not been done so already:
+        if self.cov_train_inv is None:
+            self.cov_train_inv = np.linalg.inv(self.cov_train)
+        # Calculate mahalanobis term for log likelihood:
+        mahalanobis = self.targets.T.dot(self.cov_train_inv).dot(self.targets)
+        # Return the scalar log-likelihood:
+        return np.asscalar(-.5 * (logdet + mahalanobis))
             
 
 
@@ -125,4 +141,3 @@ if __name__ == "__main__":
     plt.pcolor(k)
     plt.savefig("img")
     plt.close()
-

@@ -51,4 +51,4 @@ if __name__ == "__main__":
     mean, std = gp.predict(x_test)
 
     plot_predictions(x_train, y_train, x_test, mean, std)
-    
+    print(gp.log_evidence())
