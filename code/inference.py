@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from models.gaussianprocess import GaussianProcess
-from data.data import load_xy, plot_1D
+from data.data import load_npz, plot_1D
 
 def plot_predictions(
     x_train, y_train, x_test,
@@ -35,12 +35,12 @@ def plot_density(
     pass
 
 if __name__ == "__main__":
-    x_train, y_train = load_xy("code/data/sinusoidal_data.npz")
+    x_train, y_train = load_npz("code/data/sinusoidal_data.npz")
     plot_1D(x_train, y_train, format_str='ro')
 
-    log_length = -1
-    log_scale = 2
-    log_std = -5
+    log_length = -.5
+    log_scale = 3
+    log_std = -2
 
     gp = GaussianProcess(
         x_train, y_train,
